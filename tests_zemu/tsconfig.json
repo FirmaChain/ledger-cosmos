@@ -8,7 +8,8 @@
     "declaration": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "types": ["node", "jest"]
   },
   "exclude": [
     "node_modules",

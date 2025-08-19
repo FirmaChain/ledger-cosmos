@@ -22,7 +22,7 @@
 #include "app_mode.h"
 
 const chains_t chains[] = {
-    {COIN_DEFAULT_CHAINID, " ATOM", " uatom", 6, "cosmos"}
+    {COIN_DEFAULT_CHAINID, " FCT", " ufct", 6, "firma"}
 };
 
 const uint32_t chains_len = sizeof(chains) / sizeof(chains[0]);

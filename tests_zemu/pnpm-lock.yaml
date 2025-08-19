@@ -18,9 +18,9 @@ importers:
       '@types/jest':
         specifier: ^29.5.12
         version: 29.5.14
-      '@types/ledgerhq__hw-transport':
-        specifier: ^6.0.0
-        version: 6.0.0
+      '@types/node':
+        specifier: ^24.3.0
+        version: 24.3.0
       '@typescript-eslint/eslint-plugin':
         specifier: ^8.29.1
         version: 8.40.0(@typescript-eslint/parser@8.40.0(eslint@9.33.0)(typescript@5.9.2))(eslint@9.33.0)(typescript@5.9.2)
@@ -540,10 +540,6 @@ packages:
 
   '@types/json5@0.0.29':
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
-
-  '@types/ledgerhq__hw-transport@6.0.0':
-    resolution: {integrity: sha512-Ai0Ml697eJs/7uQiuA/15IML+f+hsqjZ6BDGrQl77VF8TD8dbhKVnzXjQtpg5N0Zi3g74abALD62N0NLqzUy8A==}
-    deprecated: This is a stub types definition. @ledgerhq/hw-transport provides its own type definitions, so you do not need this installed.
 
   '@types/node@24.3.0':
     resolution: {integrity: sha512-aPTXCrfwnDLj4VvXrm+UUCQjNEvJgNA8s5F1cvwQU+3KNltTOkBm1j30uNLyqqPNe7gE3KFzImYoZEfLhp4Yow==}
@@ -3057,10 +3053,6 @@ snapshots:
   '@types/json-schema@7.0.15': {}
 
   '@types/json5@0.0.29': {}
-
-  '@types/ledgerhq__hw-transport@6.0.0':
-    dependencies:
-      '@ledgerhq/hw-transport': 6.31.9
 
   '@types/node@24.3.0':
     dependencies:
