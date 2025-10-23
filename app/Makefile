@@ -84,7 +84,11 @@ INCLUDES_PATH += $(CURDIR)/src/swap
 ########################################
 # Application communication interfaces #
 ########################################
+ifeq ($(TARGET_NAME),TARGET_NANOS2) ## It cause black screen 
+ENABLE_BLUETOOTH = 0
+else
 ENABLE_BLUETOOTH = 1
+endif
 #ENABLE_NFC = 1
 
 ########################################
