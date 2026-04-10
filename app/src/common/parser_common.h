@@ -95,6 +95,12 @@ typedef enum {
     parser_swap_memo_not_present,
     parser_swap_wrap_amount_computation_error,
     parser_swap_wrong_type,
+
+    // protobuf
+    parser_protobuf_invalid_base64,
+    parser_protobuf_invalid_wire_type,
+    parser_protobuf_missing_chain_id,
+    parser_protobuf_varint_overflow,
 } parser_error_t;
 
 #ifdef __cplusplus

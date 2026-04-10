@@ -63,7 +63,9 @@ parser_error_t parser_parse(parser_context_t *ctx,
 }
 
 parser_error_t parser_validate(const parser_context_t *ctx) {
-    if (ctx->tx_obj->tx_type == tx_json) {
+    if (ctx->tx_obj->tx_type == tx_protobuf) {
+        // Protobuf validation done during parsing (chainId presence)
+    } else if (ctx->tx_obj->tx_type == tx_json) {
           CHECK_PARSER_ERR(tx_validate(&parser_tx_obj.tx_json.json))
     }
 
@@ -82,6 +84,10 @@ parser_error_t parser_validate(const parser_context_t *ctx) {
 
 parser_error_t parser_getNumItems(const parser_context_t *ctx, uint8_t *num_items) {
     *num_items = 0;
+    if (ctx->tx_obj->tx_type == tx_protobuf) {
+        *num_items = 4;  // Warning, Chain ID, Account Number, Body Hash
+        return parser_ok;
+    }
     if (ctx->tx_obj->tx_type == tx_textual) {
         *num_items = app_mode_expert() ? (uint8_t) ctx->tx_obj->tx_text.n_containers : (uint8_t) (ctx->tx_obj->tx_text.n_containers - ctx->tx_obj->tx_text.n_expert);
         return parser_ok;
@@ -545,13 +551,79 @@ __Z_INLINE parser_error_t parser_getJsonItem(const parser_context_t *ctx,
     return parser_ok;
 }
 
+__Z_INLINE parser_error_t parser_getProtobufItem(const parser_context_t *ctx,
+                                                  uint8_t displayIdx,
+                                                  char *outKey, uint16_t outKeyLen,
+                                                  char *outVal, uint16_t outValLen,
+                                                  uint8_t pageIdx, uint8_t *pageCount) {
+    MEMZERO(outKey, outKeyLen);
+    MEMZERO(outVal, outValLen);
+    *pageCount = 1;
+
+    const tx_protobuf_t *proto = &ctx->tx_obj->tx_proto;
+
+    switch (displayIdx) {
+        case 0:
+            snprintf(outKey, outKeyLen, "WARNING");
+            snprintf(outVal, outValLen, "Blind Signing");
+            break;
+
+        case 1: {
+            snprintf(outKey, outKeyLen, "Chain ID");
+            uint8_t len = proto->chainId_len;
+            if (len >= outValLen) len = (uint8_t)(outValLen - 1);
+            MEMCPY(outVal, ctx->buffer + proto->chainId_offset, len);
+            outVal[len] = '\0';
+            break;
+        }
+
+        case 2: {
+            snprintf(outKey, outKeyLen, "Account");
+            // Simple uint64 to decimal string
+            uint64_t n = proto->accountNumber;
+            char buf[21];
+            MEMZERO(buf, sizeof(buf));
+            int pos = (int)(sizeof(buf) - 2);
+            if (n == 0) {
+                buf[pos] = '0';
+            } else {
+                while (n > 0 && pos >= 0) {
+                    buf[pos--] = (char)('0' + (n % 10));
+                    n /= 10;
+                }
+                pos++;
+            }
+            snprintf(outVal, outValLen, "%s", buf + pos);
+            break;
+        }
+
+        case 3: {
+            snprintf(outKey, outKeyLen, "Body Hash");
+            char hexBuf[65];
+            MEMZERO(hexBuf, sizeof(hexBuf));
+            array_to_hexstr(hexBuf, sizeof(hexBuf), proto->bodyHash, 32);
+            pageString(outVal, outValLen, hexBuf, pageIdx, pageCount);
+            break;
+        }
+
+        default:
+            return parser_display_idx_out_of_range;
+    }
+    return parser_ok;
+}
+
 parser_error_t parser_getItem(const parser_context_t *ctx,
                               uint8_t displayIdx,
                               char *outKey, uint16_t outKeyLen,
                               char *outVal, uint16_t outValLen,
                               uint8_t pageIdx, uint8_t *pageCount) {
 
-    if (ctx->tx_obj->tx_type == tx_textual) {
+    if (ctx->tx_obj->tx_type == tx_protobuf) {
+        CHECK_PARSER_ERR(parser_getProtobufItem(ctx, displayIdx,
+                        outKey, outKeyLen,
+                        outVal, outValLen,
+                        pageIdx, pageCount));
+    } else if (ctx->tx_obj->tx_type == tx_textual) {
         CHECK_PARSER_ERR(parser_getTextualItem(ctx,displayIdx,
                         outKey, outKeyLen,
                         outVal, outValLen,
