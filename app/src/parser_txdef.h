@@ -24,6 +24,7 @@ extern "C" {
 #include <json/json_parser.h>
 #include "coin.h"
 #include "cbor.h"
+#include "proto_parser.h"
 
 #define MAX_NUMBER_SCREENS 50
 #define TITLE_KEY_ID    1
@@ -105,6 +106,7 @@ typedef struct {
      union {
         tx_json_t tx_json;
         tx_textual_t tx_text;
+        tx_protobuf_t tx_proto;
      };
 } parser_tx_t;
 

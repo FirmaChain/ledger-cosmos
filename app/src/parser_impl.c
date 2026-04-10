@@ -17,6 +17,8 @@
 #include "parser_impl.h"
 #include "cbor.h"
 #include <cbor/cbor_parser_helper.h>
+#include "proto_parser.h"
+#include "buffering.h"
 
 parser_tx_t parser_tx_obj;
 
@@ -120,12 +122,48 @@ const char *parser_getErrorDescription(parser_error_t err) {
         case parser_swap_wrong_source_coins:
             return "Swap wrong source coins";
 
+        // protobuf
+        case parser_protobuf_invalid_base64:
+            return "Invalid Base64 data";
+        case parser_protobuf_invalid_wire_type:
+            return "Protobuf invalid wire type";
+        case parser_protobuf_missing_chain_id:
+            return "Protobuf missing chain_id";
+        case parser_protobuf_varint_overflow:
+            return "Protobuf varint overflow";
+
         default:
             return "Unrecognized error code";
     }
 }
 
+parser_error_t _read_protobuf_tx(parser_context_t *c, parser_tx_t *v) {
+    // Buffer contains base64(protobuf SignDoc). Decode base64 in-place.
+    uint16_t decodedLen = 0;
+    CHECK_PARSER_ERR(base64_decode_inplace((uint8_t *)c->buffer, c->bufferLen, &decodedLen))
+
+    // Update context buffer length to decoded size
+    c->bufferLen = decodedLen;
+
+    // Update the buffering system so crypto_sign() hashes correct bytes
+    buffer_state_t *bs = buffering_get_buffer();
+    if (bs != NULL) {
+        bs->pos = decodedLen;
+    }
+
+    // Parse the protobuf SignDoc
+    CHECK_PARSER_ERR(proto_parse_signdoc(c->buffer, decodedLen, &v->tx_proto))
+
+    return parser_ok;
+}
+
 parser_error_t _read_json_tx(parser_context_t *c, __Z_UNUSED parser_tx_t *v) {
+    // Auto-detect: if buffer doesn't start with '{', treat as protobuf
+    if (c->bufferLen > 0 && c->buffer[0] != '{') {
+        v->tx_type = tx_protobuf;
+        return _read_protobuf_tx(c, v);
+    }
+
     parser_error_t err = json_parse(&parser_tx_obj.tx_json.json,
                                     (const char *) c->buffer,
                                     c->bufferLen);

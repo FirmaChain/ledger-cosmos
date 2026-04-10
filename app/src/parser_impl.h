@@ -46,6 +46,7 @@ extern parser_tx_t parser_tx_obj;
 
 parser_error_t _read_json_tx(parser_context_t *c, parser_tx_t *v);
 parser_error_t _read_text_tx(parser_context_t *c, parser_tx_t *v);
+parser_error_t _read_protobuf_tx(parser_context_t *c, parser_tx_t *v);
 
 #ifdef __cplusplus
 }

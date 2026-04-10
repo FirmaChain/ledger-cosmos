@@ -85,13 +85,15 @@ static parser_tx_t tx_obj;
 
 const char *tx_parse(tx_type_e type)
 {
+    // Normalize unknown types to tx_json; auto-detection in the parser
+    // will switch to tx_protobuf if the buffer doesn't contain JSON.
 #if defined(COMPILE_TEXTUAL)
     if (type != tx_json && type != tx_textual) {
-        return parser_getErrorDescription(parser_value_out_of_range);
+        type = tx_json;
     }
 #else
     if (type != tx_json) {
-        return parser_getErrorDescription(parser_value_out_of_range);
+        type = tx_json;
     }
 #endif
 
